@@ -52,7 +52,10 @@ export default function ExportSection() {
         index + 1,
         entry.number,
         entry.name,
+        entry.phone_number || '-',
         entry.address,
+        entry.whom_to_meet || '-',
+        entry.purpose || '-',
         entry.status === 'entered' ? 'Masuk' : 'Keluar',
         entry.entry_time ? new Date(entry.entry_time).toLocaleString('id-ID') : '-',
         entry.exit_time ? new Date(entry.exit_time).toLocaleString('id-ID') : '-',
@@ -60,9 +63,9 @@ export default function ExportSection() {
 
       autoTable(doc, {
         startY: 40,
-        head: [['No', 'ID', 'Nama', 'Alamat', 'Status', 'Waktu Masuk', 'Waktu Keluar']],
+        head: [['No', 'ID', 'Nama', 'HP', 'Alamat/Perusahaan', 'Ketemu', 'Tujuan', 'Status', 'Waktu Masuk', 'Waktu Keluar']],
         body: tableData,
-        styles: { fontSize: 8 },
+        styles: { fontSize: 7 },
         headStyles: { fillColor: [37, 99, 235] },
       });
 

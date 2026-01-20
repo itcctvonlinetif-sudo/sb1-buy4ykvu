@@ -24,7 +24,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEntry(data: InsertEntry): Promise<Entry> {
-    const [entry] = await db.insert(entries).values(data).returning();
+    const timestamp = new Date().getTime().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const autoNumber = `V-${timestamp}-${random}`;
+    
+    const [entry] = await db.insert(entries).values({
+      ...data,
+      number: autoNumber
+    }).returning();
     return entry;
   }
 

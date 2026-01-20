@@ -5,21 +5,23 @@ import { CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function EntryForm() {
   const [formData, setFormData] = useState({
-    number: '',
     name: '',
     address: '',
+    purpose: '',
+    whom_to_meet: '',
+    phone_number: '',
   });
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const createMutation = useMutation({
-    mutationFn: async (data: { number: string; name: string; address: string }) => {
+    mutationFn: async (data: typeof formData) => {
       const res = await apiRequest('POST', '/api/entries', { ...data, status: 'entered' });
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/entries'] });
       setMessage({ type: 'success', text: 'Data berhasil ditambahkan! QR Code telah dibuat.' });
-      setFormData({ number: '', name: '', address: '' });
+      setFormData({ name: '', address: '', purpose: '', whom_to_meet: '', phone_number: '' });
     },
     onError: () => {
       setMessage({ type: 'error', text: 'Gagal menambahkan data. Silakan coba lagi.' });
@@ -56,22 +58,6 @@ export default function EntryForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="number" className="block text-sm font-medium text-gray-700 mb-2">
-            Nomor ID <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="number"
-            data-testid="input-number"
-            value={formData.number}
-            onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-            placeholder="Contoh: 001, A001, dll"
-          />
-        </div>
-
-        <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
             Nama Lengkap <span className="text-red-500">*</span>
           </label>
@@ -88,8 +74,23 @@ export default function EntryForm() {
         </div>
 
         <div>
+          <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 mb-2">
+            Nomor Handphone <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="phone_number"
+            value={formData.phone_number}
+            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+            placeholder="Masukkan nomor handphone"
+          />
+        </div>
+
+        <div>
           <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-            Alamat <span className="text-red-500">*</span>
+            Alamat/ Perusahaan <span className="text-red-500">*</span>
           </label>
           <textarea
             id="address"
@@ -97,10 +98,41 @@ export default function EntryForm() {
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             required
-            rows={3}
+            rows={2}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow resize-none"
-            placeholder="Masukkan alamat lengkap"
+            placeholder="Masukkan alamat atau nama perusahaan"
           />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="whom_to_meet" className="block text-sm font-medium text-gray-700 mb-2">
+              Ketemu Siapa <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="whom_to_meet"
+              value={formData.whom_to_meet}
+              onChange={(e) => setFormData({ ...formData, whom_to_meet: e.target.value })}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              placeholder="Nama orang yang ditemui"
+            />
+          </div>
+          <div>
+            <label htmlFor="purpose" className="block text-sm font-medium text-gray-700 mb-2">
+              Tujuan Berkunjung <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="purpose"
+              value={formData.purpose}
+              onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              placeholder="Tujuan kunjungan"
+            />
+          </div>
         </div>
 
         <button

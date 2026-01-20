@@ -119,8 +119,22 @@ export default function EntryList() {
                   <p className="text-gray-900 font-medium" data-testid={`text-name-${entry.id}`}>{entry.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-500 mb-1">Alamat:</p>
+                  <p className="text-sm font-semibold text-gray-500 mb-1">Alamat/ Perusahaan:</p>
                   <p className="text-gray-700 text-sm" data-testid={`text-address-${entry.id}`}>{entry.address}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500">Ketemu:</p>
+                    <p className="text-xs text-gray-700 truncate">{entry.whom_to_meet}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500">Tujuan:</p>
+                    <p className="text-xs text-gray-700 truncate">{entry.purpose}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-500">HP:</p>
+                  <p className="text-xs text-gray-700">{entry.phone_number}</p>
                 </div>
                 <div className="pt-2 border-t border-gray-100">
                   <span

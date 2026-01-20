@@ -8,6 +8,9 @@ export const entries = pgTable("entries", {
   number: text("number").notNull(),
   name: text("name").notNull(),
   address: text("address").notNull(),
+  purpose: text("purpose"),
+  whom_to_meet: text("whom_to_meet"),
+  phone_number: text("phone_number"),
   entry_time: timestamp("entry_time", { withTimezone: true }).defaultNow(),
   exit_time: timestamp("exit_time", { withTimezone: true }),
   status: text("status").default("entered").notNull(),
@@ -18,11 +21,15 @@ export const entries = pgTable("entries", {
 
 export const insertEntrySchema = createInsertSchema(entries).omit({
   id: true,
+  number: true,
   entry_time: true,
   exit_time: true,
   created_at: true,
 }).extend({
   status: z.enum(["entered", "exited"]).default("entered"),
+  purpose: z.string().min(1, "Tujuan berkunjung harus diisi"),
+  whom_to_meet: z.string().min(1, "Ketemu siapa harus diisi"),
+  phone_number: z.string().min(1, "Nomor handphone harus diisi"),
 });
 
 export type InsertEntry = z.infer<typeof insertEntrySchema>;
