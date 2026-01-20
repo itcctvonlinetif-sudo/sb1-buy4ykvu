@@ -74,6 +74,40 @@ export function registerRoutes(app: Express): void {
     }
   });
 
+  app.patch("/api/entries/status-by-any/:idOrRfid", async (req, res) => {
+    try {
+      const { idOrRfid } = req.params;
+      const { status } = req.body;
+
+      if (status !== "entered" && status !== "exited") {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+
+      // Try searching by ID first (UUID)
+      let entry = await storage.getEntryById(idOrRfid);
+
+      // If not found, try searching by RFID
+      if (!entry) {
+        const allEntries = await storage.getEntries("entered");
+        entry = allEntries.find(e => e.rfid_tag === idOrRfid);
+      }
+
+      if (!entry) {
+        return res.status(404).json({ error: "Visitor not found" });
+      }
+
+      if (entry.status === status) {
+        return res.status(400).json({ error: `Visitor already ${status}` });
+      }
+
+      const updatedEntry = await storage.updateEntryStatus(entry.id, status);
+      res.json(updatedEntry);
+    } catch (error) {
+      console.error("Error updating entry by ID/RFID:", error);
+      res.status(500).json({ error: "Failed to update entry" });
+    }
+  });
+
   app.delete("/api/entries/:id", async (req, res) => {
     try {
       const success = await storage.deleteEntry(req.params.id);
