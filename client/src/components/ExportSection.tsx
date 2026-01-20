@@ -309,7 +309,7 @@ export default function ExportSection() {
           <div className="mb-4 p-4 bg-gray-50 rounded-md">
             <p className="text-sm text-gray-700 mb-2 font-medium">Format file yang diperlukan:</p>
             <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-              <li>Kolom: <strong>Nomor</strong>, <strong>Nama</strong>, <strong>Alamat</strong></li>
+              <li>Kolom: <strong>Nama</strong>, <strong>HP</strong>, <strong>Alamat</strong>, <strong>Ketemu</strong>, <strong>Tujuan</strong></li>
               <li>Format: Excel (.xlsx) atau CSV (.csv)</li>
               <li>Baris pertama harus berisi header kolom</li>
             </ul>
