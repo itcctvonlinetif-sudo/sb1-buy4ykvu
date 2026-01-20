@@ -1,13 +1,25 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
-import { Download, RefreshCw, Trash2, LogOut, QrCode, X } from 'lucide-react';
+import { Download, RefreshCw, Trash2, QrCode, X, MoreHorizontal, LogOut } from 'lucide-react';
 import { apiRequest, queryClient } from '../lib/queryClient';
 import type { Entry } from '../../../shared/schema';
 
 export default function EntryList() {
   const [filter, setFilter] = useState<'all' | 'entered' | 'exited'>('all');
   const [selectedQR, setSelectedQR] = useState<Entry | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const { data: entries = [], isLoading, refetch } = useQuery<Entry[]>({
     queryKey: ['/api/entries', filter],
@@ -167,35 +179,58 @@ export default function EntryList() {
                         {entry.status === 'entered' ? 'MASUK' : 'KELUAR'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                      <button 
-                        onClick={() => setSelectedQR(entry)}
-                        className="text-gray-400 hover:text-blue-600 transition-colors"
-                        title="Tampilkan QR Code"
-                      >
-                        <QrCode size={18} />
-                      </button>
-                      
-                      {entry.status === 'entered' && (
-                        <button
-                          onClick={() => checkOutMutation.mutate(entry.id)}
-                          disabled={checkOutMutation.isPending}
-                          className="text-blue-600 hover:text-blue-800 transition-colors font-semibold"
-                        >
-                          Check Out
-                        </button>
-                      )}
-                      
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
                       <button
-                        onClick={() => {
-                          if (confirm('Hapus data pengunjung ini?')) {
-                            deleteMutation.mutate(entry.id);
-                          }
-                        }}
-                        className="text-gray-400 hover:text-red-600 transition-colors"
+                        onClick={() => setOpenMenuId(openMenuId === entry.id ? null : entry.id)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors p-1"
                       >
-                        <Trash2 size={18} />
+                        <MoreHorizontal size={20} />
                       </button>
+
+                      {openMenuId === entry.id && (
+                        <div 
+                          ref={menuRef}
+                          className="absolute right-6 top-10 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1 text-left"
+                        >
+                          <button
+                            onClick={() => {
+                              setSelectedQR(entry);
+                              setOpenMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            <QrCode size={16} />
+                            Tampilkan QR Code
+                          </button>
+
+                          {entry.status === 'entered' && (
+                            <button
+                              onClick={() => {
+                                checkOutMutation.mutate(entry.id);
+                                setOpenMenuId(null);
+                              }}
+                              disabled={checkOutMutation.isPending}
+                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 font-medium"
+                            >
+                              <LogOut size={16} />
+                              Check Out
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => {
+                              if (confirm('Hapus data pengunjung ini?')) {
+                                deleteMutation.mutate(entry.id);
+                              }
+                              setOpenMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          >
+                            <Trash2 size={16} />
+                            Hapus Data
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))
