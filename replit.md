@@ -31,26 +31,18 @@ The frontend uses a tab-based navigation pattern with four main sections: Add Da
 ### Backend Architecture
 - **Framework**: Express.js 5 with TypeScript
 - **Runtime**: Node.js with tsx for development
-- **Architecture Pattern**: Simple storage abstraction layer separating routes from database operations
-
-The server runs on port 3001 and proxies API requests from the Vite dev server running on port 5000.
-
-### Data Storage
-- **Database**: PostgreSQL
-- **ORM**: Drizzle ORM with drizzle-kit for migrations
-- **Schema Validation**: Zod schemas generated from Drizzle schema using drizzle-zod
-
-Single table design with `entries` table containing: id (UUID), number, name, address, entry_time, exit_time, status, created_at.
+- **Architecture Pattern**: Storage abstraction layer separating routes from database operations
+- **Database**: PostgreSQL with Drizzle ORM (migrated from Supabase)
 
 ### Key Design Decisions
 
-1. **Monorepo Structure**: Client and server code in same repository with shared schema definitions in `/shared` directory. This ensures type safety across the full stack.
+1. **Monorepo Structure**: Client and server code in same repository. Client in `/client`, server in `/server`, and shared schema in `/shared`.
 
-2. **Shared Schema**: The `/shared/schema.ts` file defines both database schema and TypeScript types, used by both frontend and backend for consistent data contracts.
+2. **Shared Schema**: The `/shared/schema.ts` file defines both database schema and TypeScript types, used by both frontend and backend.
 
-3. **Storage Abstraction**: `IStorage` interface in `server/storage.ts` abstracts database operations, making it easier to swap implementations if needed.
+3. **Storage Abstraction**: `IStorage` interface in `server/storage.ts` abstracts database operations.
 
-4. **QR Code Strategy**: QR codes are generated client-side using qrcode.react and contain visitor entry IDs. Scanning validates against the database to prevent duplicate exits.
+4. **API Strategy**: Replaced direct Supabase client calls with TanStack Query fetching from local Express API.
 
 5. **Export Capabilities**: Client-side PDF generation with jsPDF/jspdf-autotable and Excel handling with xlsx library for offline-capable exports.
 
