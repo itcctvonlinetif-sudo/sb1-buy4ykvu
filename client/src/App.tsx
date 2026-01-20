@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
+import { useState } from 'react';
 import { UserPlus, List, ScanLine, Download } from 'lucide-react';
 import EntryForm from './components/EntryForm';
 import EntryList from './components/EntryList';
@@ -14,72 +14,46 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-white rounded-md shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-white">
-              <h1 className="text-3xl font-bold mb-2" data-testid="text-app-title">Sistem Keluar Masuk</h1>
-              <p className="text-blue-100">Manajemen Data Pengunjung dengan QR Code</p>
+      <div className="min-h-screen bg-slate-50 font-sans">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-blue-600 px-8 py-10 text-white">
+              <h1 className="text-3xl font-bold tracking-tight" data-testid="text-app-title">Sistem Keluar Masuk</h1>
+              <p className="mt-2 text-blue-100 text-lg">Manajemen Data Pengunjung dengan QR Code</p>
             </div>
 
-            <div className="border-b border-gray-200">
-              <nav className="flex -mb-px flex-wrap">
-                <button
-                  onClick={() => setActiveTab('add')}
-                  data-testid="tab-add"
-                  className={`flex items-center gap-2 px-6 py-4 border-b-2 font-medium transition-colors ${
-                    activeTab === 'add'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <UserPlus size={20} />
-                  Tambah Data
-                </button>
-                <button
-                  onClick={() => setActiveTab('list')}
-                  data-testid="tab-list"
-                  className={`flex items-center gap-2 px-6 py-4 border-b-2 font-medium transition-colors ${
-                    activeTab === 'list'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <List size={20} />
-                  Daftar Pengunjung
-                </button>
-                <button
-                  onClick={() => setActiveTab('scan')}
-                  data-testid="tab-scan"
-                  className={`flex items-center gap-2 px-6 py-4 border-b-2 font-medium transition-colors ${
-                    activeTab === 'scan'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <ScanLine size={20} />
-                  Scan QR Code
-                </button>
-                <button
-                  onClick={() => setActiveTab('export')}
-                  data-testid="tab-export"
-                  className={`flex items-center gap-2 px-6 py-4 border-b-2 font-medium transition-colors ${
-                    activeTab === 'export'
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <Download size={20} />
-                  Export & Import
-                </button>
+            <div className="border-b border-slate-200 bg-slate-50/50">
+              <nav className="flex overflow-x-auto no-scrollbar">
+                {[
+                  { id: 'add', label: 'Tambah Data', icon: UserPlus },
+                  { id: 'list', label: 'Daftar Pengunjung', icon: List },
+                  { id: 'scan', label: 'Scan QR Code', icon: ScanLine },
+                  { id: 'export', label: 'Export & Import', icon: Download },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as Tab)}
+                    data-testid={`tab-${tab.id}`}
+                    className={`flex items-center gap-2 px-8 py-5 border-b-2 font-semibold text-sm transition-all whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? 'border-blue-600 text-blue-600 bg-white'
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <tab.icon size={18} />
+                    {tab.label}
+                  </button>
+                ))}
               </nav>
             </div>
 
-            <div className="p-6">
-              {activeTab === 'add' && <EntryForm />}
-              {activeTab === 'list' && <EntryList />}
-              {activeTab === 'scan' && <QRScanner />}
-              {activeTab === 'export' && <ExportSection />}
+            <div className="p-8">
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                {activeTab === 'add' && <EntryForm />}
+                {activeTab === 'list' && <EntryList />}
+                {activeTab === 'scan' && <QRScanner />}
+                {activeTab === 'export' && <ExportSection />}
+              </div>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  root: 'client',
   server: {
     host: '0.0.0.0',
     port: 5000,
@@ -17,8 +18,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, 'src'),
     },
+  },
+  build: {
+    outDir: '../dist/public',
+    emptyOutDir: true,
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
