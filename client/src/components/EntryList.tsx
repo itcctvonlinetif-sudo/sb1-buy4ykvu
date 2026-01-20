@@ -120,7 +120,7 @@ export default function EntryList() {
           <p className="mt-4 text-gray-600">Memuat data...</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm overflow-x-auto">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -190,7 +190,7 @@ export default function EntryList() {
                       {openMenuId === entry.id && (
                         <div 
                           ref={menuRef}
-                          className="absolute right-6 top-10 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1 text-left"
+                          className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-xl z-50 py-1 text-left"
                         >
                           <button
                             onClick={() => {
