@@ -27,7 +27,7 @@ function App() {
                 {[
                   { id: 'add', label: 'Tambah Data', icon: UserPlus },
                   { id: 'list', label: 'Daftar Pengunjung', icon: List },
-                  { id: 'scan', label: 'Scan QR Code', icon: ScanLine },
+                  { id: 'scan', label: 'Scan Kartu / QR', icon: ScanLine },
                   { id: 'export', label: 'Export & Import', icon: Download },
                 ].map((tab) => (
                   <button
