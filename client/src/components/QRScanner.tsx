@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '../lib/queryClient';
 import { CheckCircle, XCircle, AlertCircle, Camera } from 'lucide-react';
@@ -9,7 +9,9 @@ export default function QRScanner() {
   const [scanResult, setScanResult] = useState<Entry | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning'; text: string } | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
   const exitMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -30,39 +32,9 @@ export default function QRScanner() {
     },
   });
 
-  useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
-      }
-    };
-  }, []);
-
-  const startScanner = () => {
-    if (scannerRef.current) {
-      scannerRef.current.clear().catch(console.error);
-    }
-
-    setIsScanning(true);
-    setScanResult(null);
-    setMessage(null);
-
-    const scanner = new Html5QrcodeScanner(
-      'qr-reader',
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-      },
-      false
-    );
-
-    scanner.render(onScanSuccess, onScanError);
-    scannerRef.current = scanner;
-  };
-
   const onScanSuccess = async (decodedText: string) => {
-    if (scannerRef.current) {
-      scannerRef.current.clear().catch(console.error);
+    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+      await html5QrCodeRef.current.stop().catch(console.error);
     }
     setIsScanning(false);
 
@@ -91,14 +63,68 @@ export default function QRScanner() {
     }
   };
 
-  const onScanError = (error: string) => {
-    console.warn('QR scan error:', error);
+  const onScanError = (_error: string | Error) => {
+    // Suppress scan errors as they occur frequently during normal operation
   };
 
-  const stopScanner = () => {
-    if (scannerRef.current) {
-      scannerRef.current.clear().catch(console.error);
-      scannerRef.current = null;
+  useEffect(() => {
+    Html5Qrcode.getCameras()
+      .then((devices) => {
+        if (devices && devices.length > 0) {
+          setCameras(devices);
+          const backCamera = devices.find(d => 
+            d.label.toLowerCase().includes('back') || 
+            d.label.toLowerCase().includes('rear') ||
+            d.label.toLowerCase().includes('environment')
+          );
+          setSelectedCameraId(backCamera ? backCamera.id : devices[0].id);
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting cameras:', err);
+        setMessage({ type: 'error', text: 'Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.' });
+      });
+
+    return () => {
+      if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+        html5QrCodeRef.current.stop().catch(console.error);
+      }
+    };
+  }, []);
+
+  const startScanner = async () => {
+    if (!selectedCameraId) {
+      setMessage({ type: 'error', text: 'Kamera tidak ditemukan.' });
+      return;
+    }
+
+    setIsScanning(true);
+    setScanResult(null);
+    setMessage(null);
+
+    const html5QrCode = new Html5Qrcode('qr-reader');
+    html5QrCodeRef.current = html5QrCode;
+
+    try {
+      await html5QrCode.start(
+        selectedCameraId,
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        onScanSuccess,
+        onScanError
+      );
+    } catch (err) {
+      console.error('Unable to start scanning', err);
+      setMessage({ type: 'error', text: 'Gagal memulai kamera. Pastikan izin kamera diberikan.' });
+      setIsScanning(false);
+    }
+  };
+
+  const stopScanner = async () => {
+    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+      await html5QrCodeRef.current.stop().catch(console.error);
     }
     setIsScanning(false);
   };
@@ -107,26 +133,55 @@ export default function QRScanner() {
     <div className="max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-6" data-testid="text-scanner-title">Scan QR Code</h2>
 
-      <div className="bg-white border border-gray-200 rounded-md p-6 mb-6">
+      <div className="bg-white border border-gray-200 rounded-md p-6 mb-6 shadow-sm">
         {!isScanning ? (
           <div className="text-center py-8">
             <Camera className="mx-auto mb-4 text-gray-400" size={64} />
-            <p className="text-gray-600 mb-6">Klik tombol di bawah untuk mulai scanning QR Code</p>
+            <p className="text-gray-600 mb-6 font-medium">Klik tombol di bawah untuk mulai scanning QR Code</p>
+            
+            {cameras.length > 1 && (
+              <div className="mb-6 flex flex-col items-center gap-2">
+                <label className="text-sm text-gray-500 font-medium">Pilih Kamera:</label>
+                <select 
+                  value={selectedCameraId || ''} 
+                  onChange={(e) => setSelectedCameraId(e.target.value)}
+                  className="px-3 py-2 border rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none max-w-xs truncate"
+                >
+                  {cameras.map((camera) => (
+                    <option key={camera.id} value={camera.id}>
+                      {camera.label || `Kamera ${camera.id.slice(0, 5)}...`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <button
               onClick={startScanner}
+              disabled={cameras.length === 0}
               data-testid="button-start-scan"
-              className="px-6 py-3 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors"
+              className={`px-8 py-3 rounded-md font-semibold text-white transition-all shadow-md ${
+                cameras.length === 0 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700 active:scale-95'
+              }`}
             >
-              Mulai Scan
+              {cameras.length === 0 ? 'Mencari Kamera...' : 'Mulai Scan'}
             </button>
+            
+            {cameras.length === 0 && (
+              <p className="mt-4 text-xs text-red-500">
+                Kamera tidak terdeteksi. Silakan muat ulang halaman atau periksa izin browser.
+              </p>
+            )}
           </div>
         ) : (
           <div>
-            <div id="qr-reader" className="mb-4"></div>
+            <div id="qr-reader" className="mb-4 overflow-hidden rounded-lg bg-black min-h-[300px]"></div>
             <button
               onClick={stopScanner}
               data-testid="button-stop-scan"
-              className="w-full px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 transition-colors"
+              className="w-full px-4 py-3 bg-red-600 text-white rounded-md font-bold hover:bg-red-700 transition-colors shadow-sm active:scale-95"
             >
               Berhenti Scan
             </button>
@@ -137,7 +192,7 @@ export default function QRScanner() {
       {message && (
         <div
           data-testid={`alert-scan-${message.type}`}
-          className={`mb-6 p-4 rounded-md flex items-center gap-3 ${
+          className={`mb-6 p-4 rounded-md flex items-center gap-3 animate-in fade-in slide-in-from-top-1 ${
             message.type === 'success'
               ? 'bg-green-50 text-green-800 border border-green-200'
               : message.type === 'warning'
@@ -157,29 +212,29 @@ export default function QRScanner() {
       )}
 
       {scanResult && (
-        <div className="bg-white border border-gray-200 rounded-md p-6" data-testid="card-scan-result">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Detail Pengunjung</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between border-b border-gray-100 pb-2">
-              <span className="font-semibold text-gray-600">Nomor:</span>
-              <span className="text-gray-900" data-testid="text-result-number">{scanResult.number}</span>
+        <div className="bg-white border border-gray-200 rounded-md p-6 shadow-sm animate-in fade-in slide-in-from-bottom-2" data-testid="card-scan-result">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Detail Pengunjung</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center pb-1">
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Nomor:</span>
+              <span className="text-gray-900 font-medium" data-testid="text-result-number">{scanResult.number}</span>
             </div>
-            <div className="flex justify-between border-b border-gray-100 pb-2">
-              <span className="font-semibold text-gray-600">Nama:</span>
-              <span className="text-gray-900" data-testid="text-result-name">{scanResult.name}</span>
+            <div className="flex justify-between items-center pb-1">
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Nama:</span>
+              <span className="text-gray-900 font-medium" data-testid="text-result-name">{scanResult.name}</span>
             </div>
-            <div className="border-b border-gray-100 pb-2">
-              <span className="font-semibold text-gray-600">Alamat:</span>
-              <p className="text-gray-900 mt-1" data-testid="text-result-address">{scanResult.address}</p>
+            <div className="pb-1">
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Alamat:</span>
+              <p className="text-gray-900 mt-1 leading-relaxed" data-testid="text-result-address">{scanResult.address}</p>
             </div>
-            <div className="flex justify-between pt-2">
-              <span className="font-semibold text-gray-600">Status:</span>
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Status:</span>
               <span
                 data-testid="badge-result-status"
-                className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest ${
                   scanResult.status === 'entered'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                    ? 'bg-green-100 text-green-800 border border-green-200'
+                    : 'bg-red-100 text-red-800 border border-red-200'
                 }`}
               >
                 {scanResult.status === 'entered' ? 'Masuk' : 'Keluar'}
