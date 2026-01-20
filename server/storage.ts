@@ -47,9 +47,22 @@ export class DatabaseStorage implements IStorage {
     return entry;
   }
 
+  async deleteEntry(id: string): Promise<boolean> {
+    const [deleted] = await db.delete(entries).where(eq(entries.id, id)).returning();
+    return !!deleted;
+  }
+
   async createManyEntries(data: InsertEntry[]): Promise<Entry[]> {
     if (data.length === 0) return [];
-    return await db.insert(entries).values(data).returning();
+    
+    const entriesWithNumbers = data.map(entry => {
+      const timestamp = new Date().getTime().toString().slice(-6);
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const autoNumber = `V-${timestamp}-${random}`;
+      return { ...entry, number: autoNumber };
+    });
+
+    return await db.insert(entries).values(entriesWithNumbers).returning();
   }
 }
 

@@ -57,22 +57,33 @@ export function registerRoutes(app: Express): void {
     }
   });
 
-  app.patch("/api/entries/:id/exit", async (req, res) => {
+  app.patch("/api/entries/:id/status", async (req, res) => {
     try {
-      const entry = await storage.getEntryById(req.params.id);
-      if (!entry) {
+      const { status } = req.body;
+      if (status !== "entered" && status !== "exited") {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      const updatedEntry = await storage.updateEntryStatus(req.params.id, status);
+      if (!updatedEntry) {
         return res.status(404).json({ error: "Entry not found" });
       }
-      
-      if (entry.status === "exited") {
-        return res.status(400).json({ error: "Entry already exited", entry });
-      }
-
-      const updatedEntry = await storage.updateEntryStatus(req.params.id, "exited");
       res.json(updatedEntry);
     } catch (error) {
-      console.error("Error updating entry:", error);
-      res.status(500).json({ error: "Failed to update entry" });
+      console.error("Error updating entry status:", error);
+      res.status(500).json({ error: "Failed to update entry status" });
+    }
+  });
+
+  app.delete("/api/entries/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteEntry(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      res.status(500).json({ error: "Failed to delete entry" });
     }
   });
 }

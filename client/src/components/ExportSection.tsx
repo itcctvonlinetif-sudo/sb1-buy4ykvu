@@ -197,12 +197,14 @@ export default function ExportSection() {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-          const entries = jsonData.map((row: Record<string, unknown>) => ({
-            number: String(row['Nomor'] || row['nomor'] || row['Number'] || row['number'] || ''),
+          const entries = jsonData.map((row: any) => ({
             name: String(row['Nama'] || row['nama'] || row['Name'] || row['name'] || ''),
             address: String(row['Alamat'] || row['alamat'] || row['Address'] || row['address'] || ''),
+            phone_number: String(row['HP'] || row['hp'] || row['Phone'] || row['phone'] || ''),
+            whom_to_meet: String(row['Ketemu'] || row['ketemu'] || row['Meet'] || row['meet'] || ''),
+            purpose: String(row['Tujuan'] || row['tujuan'] || row['Purpose'] || row['purpose'] || ''),
             status: 'entered',
-          })).filter(entry => entry.number && entry.name && entry.address);
+          })).filter(entry => entry.name && entry.address);
 
           if (entries.length === 0) {
             setMessage({ type: 'error', text: 'File tidak berisi data yang valid. Pastikan kolom Nomor, Nama, dan Alamat ada.' });
