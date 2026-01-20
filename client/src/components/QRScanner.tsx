@@ -78,6 +78,8 @@ export default function QRScanner() {
             d.label.toLowerCase().includes('environment')
           );
           setSelectedCameraId(backCamera ? backCamera.id : devices[0].id);
+        } else {
+          setMessage({ type: 'warning', text: 'Tidak ada kamera yang terdeteksi.' });
         }
       })
       .catch((err) => {
@@ -139,7 +141,7 @@ export default function QRScanner() {
             <Camera className="mx-auto mb-4 text-gray-400" size={64} />
             <p className="text-gray-600 mb-6 font-medium">Klik tombol di bawah untuk mulai scanning QR Code</p>
             
-            {cameras.length > 1 && (
+            {cameras.length > 0 && (
               <div className="mb-6 flex flex-col items-center gap-2">
                 <label className="text-sm text-gray-500 font-medium">Pilih Kamera:</label>
                 <select 

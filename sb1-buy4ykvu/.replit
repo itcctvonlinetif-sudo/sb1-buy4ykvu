@@ -1,10 +1,15 @@
-modules = ["nodejs-20"]
-[nix]
-channel = "stable-25_05"
-packages = ["unzip"]
-
+modules = ["nodejs-20", "web"]
 [agent]
 expertMode = true
+integrations = ["javascript_database:1.0.0"]
+
+[nix]
+channel = "stable-25_05"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["node", "./dist/index.cjs"]
+build = ["npm", "run", "build"]
 
 [workflows]
 runButton = "Project"
@@ -16,10 +21,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "App Server"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "App Server"
+name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -31,5 +36,13 @@ waitForPort = 5000
 outputType = "webview"
 
 [[ports]]
+localPort = 3001
+externalPort = 3002
+
+[[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 5173
+externalPort = 5173
