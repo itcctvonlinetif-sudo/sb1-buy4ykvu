@@ -11,6 +11,7 @@ export const entries = pgTable("entries", {
   purpose: text("purpose"),
   whom_to_meet: text("whom_to_meet"),
   phone_number: text("phone_number"),
+  rfid_tag: text("rfid_tag"),
   entry_time: timestamp("entry_time", { withTimezone: true }).defaultNow(),
   exit_time: timestamp("exit_time", { withTimezone: true }),
   status: text("status").default("entered").notNull(),

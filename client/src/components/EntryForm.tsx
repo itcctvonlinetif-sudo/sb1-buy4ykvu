@@ -10,6 +10,7 @@ export default function EntryForm() {
     purpose: '',
     whom_to_meet: '',
     phone_number: '',
+    rfid_tag: '',
   });
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -21,7 +22,7 @@ export default function EntryForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/entries'] });
       setMessage({ type: 'success', text: 'Data berhasil ditambahkan! QR Code telah dibuat.' });
-      setFormData({ name: '', address: '', purpose: '', whom_to_meet: '', phone_number: '' });
+      setFormData({ name: '', address: '', purpose: '', whom_to_meet: '', phone_number: '', rfid_tag: '' });
     },
     onError: () => {
       setMessage({ type: 'error', text: 'Gagal menambahkan data. Silakan coba lagi.' });
@@ -57,6 +58,21 @@ export default function EntryForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="rfid_tag" className="block text-sm font-medium text-gray-700 mb-2">
+            RFID Tag ID (Opsional - Tempelkan kartu pada scanner)
+          </label>
+          <input
+            type="text"
+            id="rfid_tag"
+            value={formData.rfid_tag}
+            onChange={(e) => setFormData({ ...formData, rfid_tag: e.target.value })}
+            className="w-full px-4 py-2 border border-orange-200 bg-orange-50 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-shadow"
+            placeholder="Klik di sini lalu tempelkan kartu RFID"
+            autoFocus
+          />
+        </div>
+
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
             Nama Lengkap <span className="text-red-500">*</span>
