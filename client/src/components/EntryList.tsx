@@ -112,18 +112,21 @@ export default function EntryList() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Visitor Name</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Entry Time</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Exit Time</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Pengunjung</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kontak</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ketemu Siapa</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tujuan</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Alamat/ Perusahaan</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Waktu Masuk</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Waktu Keluar</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {entries.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">Tidak ada data pengunjung.</td>
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">Tidak ada data pengunjung.</td>
                 </tr>
               ) : (
                 entries.map((entry) => (
@@ -132,10 +135,17 @@ export default function EntryList() {
                       <div className="text-sm font-bold text-gray-900">{entry.name}</div>
                       <div className="text-xs text-gray-500">{entry.number}</div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{entry.phone_number}</div>
-                      <div className="text-xs text-gray-500 italic">Ketemu: {entry.whom_to_meet}</div>
-                      <div className="text-xs text-gray-500 italic">Tujuan: {entry.purpose}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{entry.whom_to_meet}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{entry.purpose}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 max-w-[200px] truncate" title={entry.address}>{entry.address}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-xs text-gray-500">
@@ -150,14 +160,14 @@ export default function EntryList() {
                       <span className={`px-2 py-1 text-[10px] font-bold rounded-full uppercase ${
                         entry.status === 'entered' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                       }`}>
-                        {entry.status === 'entered' ? 'Inside' : 'Outside'}
+                        {entry.status === 'entered' ? 'MASUK' : 'KELUAR'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                       <button 
                         onClick={() => setSelectedQR(entry)}
                         className="text-gray-400 hover:text-blue-600 transition-colors"
-                        title="Show QR Code"
+                        title="Tampilkan QR Code"
                       >
                         <QrCode size={18} />
                       </button>
