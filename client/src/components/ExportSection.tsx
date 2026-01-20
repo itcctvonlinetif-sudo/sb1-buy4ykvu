@@ -37,7 +37,17 @@ export default function ExportSection() {
     setMessage(null);
 
     try {
-      const entries = await fetchEntries();
+      const allEntries = await fetchEntries();
+      
+      // Sort entries: Exited first, then by entry time descending
+      const entries = [...allEntries].sort((a, b) => {
+        if (a.status === 'exited' && b.status === 'entered') return -1;
+        if (a.status === 'entered' && b.status === 'exited') return 1;
+        
+        const timeA = new Date(a.entry_time || 0).getTime();
+        const timeB = new Date(b.entry_time || 0).getTime();
+        return timeB - timeA;
+      });
 
       const doc = new jsPDF();
 
@@ -50,7 +60,6 @@ export default function ExportSection() {
 
       const tableData = entries?.map((entry, index) => [
         index + 1,
-        entry.number,
         entry.name,
         entry.phone_number || '-',
         entry.address,
@@ -63,7 +72,7 @@ export default function ExportSection() {
 
       autoTable(doc, {
         startY: 40,
-        head: [['No', 'ID', 'Nama', 'HP', 'Alamat/Perusahaan', 'Ketemu', 'Tujuan', 'Status', 'Waktu Masuk', 'Waktu Keluar']],
+        head: [['No', 'Nama', 'HP', 'Alamat/Perusahaan', 'Ketemu', 'Tujuan', 'Status', 'Waktu Masuk', 'Waktu Keluar']],
         body: tableData,
         styles: { fontSize: 7 },
         headStyles: { fillColor: [37, 99, 235] },
